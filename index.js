@@ -33,8 +33,15 @@ const generateId = () => {
   return maxId + 1
 }
 
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
+app.get('/info', (request, response) => {
+    const phonebookPeople = phonebook.length;
+    const newDate = new Date();
+    const html = `
+                    <p>Phonebook has infor for ${phonebookPeople} people</p>
+                    <p>${newDate}</p>
+                `
+                
+    response.send(html)
 })
 
 app.get('/api/persons', (request, response) => {
