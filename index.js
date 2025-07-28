@@ -47,52 +47,65 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(phonebook)
+    response.json(phonebook)
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const person = phonebook.find(person => person.id === id)
+    const id = Number(request.params.id)
+    const person = phonebook.find(person => person.id === id)
 
-  if (person) {
+    if (person) {
     response.json(person)
-  } else {
+    } else {
     response.status(404).json({ error: `Person with ${id} id not found.` })
-  }
+    }
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const personExists = phonebook.find(person => person.id === id)
+    const id = Number(request.params.id)
+    const personExists = phonebook.find(person => person.id === id)
 
-  if (personExists) {
+    if (personExists) {
     phonebook = phonebook.filter(person => person.id !== id)
     response.status(200).json({ message: `Person with ${id} id deleted sucessfully.` })
-  } else {
+    } else {
     response.status(404).json({ error: `Person with ${id} id not found.` })
-  }
+    }
 })
 
 app.post('/api/persons', (request, response) => {
-  const body = request.body
+    const body = request.body
 
-  if (!body.name) {
-    return response.status(400).json({ 
-      error: 'name missing' 
-    })
-  }
+    const personExists = phonebook.find(person => person.name === body.name)
 
-  const person = {
+    if (!body.name) {
+        return response.status(400).json({ 
+            error: 'name missing' 
+        })
+    }
+    if (!body.number) {
+        return response.status(400).json({ 
+            error: 'number missing' 
+        })
+    }
+
+    if (personExists) {
+        return response.status(400).json({ 
+            error: 'name must be unique' 
+        })
+    }
+
+    const person = {
     id: generateId(),
     name: body.name,
     number: body.number
-  }
+    }
 
-  const newperson = person
+    const newperson = person
 
-  phonebook = phonebook.concat(newperson)
+    phonebook = phonebook.concat(newperson)
 
-  response.json(newperson)
+    response.json(newperson)
 })
 
 const PORT = 3001
