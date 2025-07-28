@@ -27,17 +27,19 @@ let phonebook = [
 ]
 
 const generateId = () => {
-  const maxId = phonebook.length > 0
-    ? Math.max(...phonebook.map(n => n.id))
-    : 0
-  return maxId + 1
+    const maxId = phonebook.length > 0
+        ? Math.max(...phonebook.map(n => n.id))
+        : 0
+
+    const radomNumber = Math.floor(Math.random() * 9999) + maxId+1;
+    return radomNumber
 }
 
 app.get('/info', (request, response) => {
     const phonebookPeople = phonebook.length;
     const newDate = new Date();
     const html = `
-                    <p>Phonebook has infor for ${phonebookPeople} people</p>
+                    <p>Phonebook has info for ${phonebookPeople} people</p>
                     <p>${newDate}</p>
                 `
                 
@@ -55,30 +57,35 @@ app.get('/api/persons/:id', (request, response) => {
   if (person) {
     response.json(person)
   } else {
-    response.status(404).end()
+    response.status(404).json({ error: `Person with ${id} id not found.` })
   }
 })
 
 app.delete('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id)
-  phonebook = phonebook.filter(person => person.id !== id)
+  const personExists = phonebook.find(person => person.id === id)
 
-  response.status(204).end()
+  if (personExists) {
+    phonebook = phonebook.filter(person => person.id !== id)
+    response.status(200).json({ message: `Person with ${id} id deleted sucessfully.` })
+  } else {
+    response.status(404).json({ error: `Person with ${id} id not found.` })
+  }
 })
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
 
-  if (!body.content) {
+  if (!body.name) {
     return response.status(400).json({ 
-      error: 'content missing' 
+      error: 'name missing' 
     })
   }
 
   const person = {
-    name: body.name,
-    number: body.name,
     id: generateId(),
+    name: body.name,
+    number: body.number
   }
 
   const newperson = person
