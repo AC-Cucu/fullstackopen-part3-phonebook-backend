@@ -3,7 +3,15 @@ const app = express()
 const morgan = require('morgan')
 
 app.use(express.json())
-app.use(morgan('dev'))
+
+morgan.token('post-body', (req) => {
+  if (req.method === 'POST' && req.body && Object.keys(req.body).length > 0) {
+    return JSON.stringify(req.body)
+  }
+  return ''
+})
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :post-body'))
 
 let phonebook = [
     { 
