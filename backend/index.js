@@ -1,8 +1,11 @@
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
+const cors = require('cors')
 
 app.use(express.json())
+app.use(express.static('dist'))
+app.use(cors())
 
 morgan.token('post-body', (req) => {
   if (req.method === 'POST' && req.body && Object.keys(req.body).length > 0) {
@@ -88,12 +91,12 @@ app.post('/api/persons', (request, response) => {
 
     const personExists = phonebook.find(person => person.name === body.name)
 
-    if (!body.name) {
+    if (!body.name || body.name === '') {
         return response.status(400).json({ 
             error: 'name missing' 
         })
     }
-    if (!body.number) {
+    if (!body.number || body.number === '') {
         return response.status(400).json({ 
             error: 'number missing' 
         })
@@ -118,6 +121,7 @@ app.post('/api/persons', (request, response) => {
     response.json(newperson)
 })
 
-const PORT = 3001
-app.listen(PORT)
-console.log(`Server running on port ${PORT}`)
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
