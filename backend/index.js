@@ -39,19 +39,22 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
     const id = request.params.id
 
-    Phonebook.findById(id).then(person => {
+    Phonebook.findById(id)
+    .then(person => {
         if (person) {
-        response.json(person)
-        } else {
-        response.status(404).json({ error: `Person with ${id} id not found.` })
+            response.json(person)
+        }
+        else {
+            response.status(404).json({ error: `Person with ${id} id not found.` })
         }
     })
+    .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     const id = request.params.id
 
     Phonebook.findByIdAndDelete(id)
@@ -62,9 +65,7 @@ app.delete('/api/persons/:id', (request, response) => {
             response.status(404).json({ error: `Person with ${id} id not found.` })
         }
     })
-    .catch(error => {
-        response.status(500).json({ error: `Error deleting person: ${error}.` })
-    });    
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response) => {
@@ -100,7 +101,25 @@ app.post('/api/persons', (request, response) => {
     })
 })
 
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+// controlador de solicitudes con endpoint desconocido
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error?.name === 'CastError' || error?.name === 'TypeError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+
+    next(error)
+}
+// este debe ser el último middleware cargado, ¡también todas las rutas deben ser registrada antes que esto!
+app.use(errorHandler)
+
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+    console.log(`Server running on port ${PORT}`)
 })
